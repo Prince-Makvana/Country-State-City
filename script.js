@@ -1,7 +1,7 @@
 const countryList = document.getElementById("countryList");
 const addCountryBtn = document.getElementById("addCountry");
 
-let data = []
+let data =  JSON.parse(localStorage.getItem("CountryData")) ||  []
 
 function addCountry() {
 
@@ -47,17 +47,10 @@ function addCountry() {
                     </div>
                 `;
 
+
+
                 cityList.appendChild(cityItem);
             });
-
-
-
-
-
-
-
-
-
 
             stateItem.querySelector(".add-city").addEventListener("click", () => {
                 const cityName = prompt("Enter city name:");
@@ -67,17 +60,10 @@ function addCountry() {
                 }
             });
 
+
+
             stateList.appendChild(stateItem);
         });
-
-
-
-
-
-
-
-        
-
         countryItem.querySelector(".add-state").addEventListener("click", () => {
             const stateName = prompt("Enter state name:");
             if (stateName) {
@@ -86,16 +72,19 @@ function addCountry() {
             }
         });
 
+
+        
         countryList.appendChild(countryItem);
     });
 
+    console.log({data})
+
+    /**
+     * In local storage on string can be store so we are parsing as a string
+     */
+
+    localStorage.setItem("CountryData", JSON.stringify(data))
 };
-
-
-
-
-
-
 
 
 addCountryBtn.addEventListener("click", () => {
@@ -105,6 +94,8 @@ addCountryBtn.addEventListener("click", () => {
         addCountry();
     }
 });
+
+addCountry()
 
 
 

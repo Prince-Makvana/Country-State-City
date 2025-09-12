@@ -47,11 +47,15 @@ function addCountry() {
                 `;
 
                 cityItem.querySelector(".edit-city").addEventListener("click", () => {
-                    const newCity = prompt("Edit city name:", data[cIndex].states[sIndex].cities[ciIndex]);
-                    if (newCity) {
+                    showInput(cityItem, city.name, (newCity)=>{
                         data[cIndex].states[sIndex].cities[ciIndex] = newCity;
                         addCountry();
-                    }
+                    })
+                    // const newCity = prompt("Edit city name:", data[cIndex].states[sIndex].cities[ciIndex]);
+                    // if (newCity) {
+                    //     data[cIndex].states[sIndex].cities[ciIndex] = newCity;
+                    //     addCountry();
+                    // }
                 });
 
                 cityItem.querySelector(".delete-city").addEventListener("click", () => {
@@ -63,19 +67,27 @@ function addCountry() {
             });
 
             stateItem.querySelector(".add-city").addEventListener("click", () => {
-                const cityName = prompt("Enter city name:");
-                if (cityName) {
+                showInput(stateItem, "", (cityName)=>{
                     data[cIndex].states[sIndex].cities.push(cityName);
                     addCountry();
-                }
+                })
+                // const cityName = prompt("Enter city name:");
+                // if (cityName) {
+                //     data[cIndex].states[sIndex].cities.push(cityName);
+                //     addCountry();
+                // }
             });
 
             stateItem.querySelector(".edit-state").addEventListener("click", () => {
-                const newState = prompt("Edit state name:", data[cIndex].states[sIndex].name);
-                if (newState) {
+                showInput(stateItem, state.name, (newState) =>{
                     data[cIndex].states[sIndex].name = newState;
                     addCountry();
-                }
+                })
+                // const newState = prompt("Edit state name:", data[cIndex].states[sIndex].name);
+                // if (newState) {
+                //     data[cIndex].states[sIndex].name = newState;
+                //     addCountry();
+                // }
             });
 
             stateItem.querySelector(".delete-state").addEventListener("click", () => {
@@ -87,19 +99,27 @@ function addCountry() {
         });
         
         countryItem.querySelector(".add-state").addEventListener("click", () => {
-            const stateName = prompt("Enter state name:");
-            if (stateName) {
+            showInput(countryItem, "", (stateName)=>{
                 data[cIndex].states.push({ name: stateName, cities: [] });
                 addCountry();
-            }
+            })
+            // const stateName = prompt("Enter state name:");
+            // if (stateName) {
+            //     data[cIndex].states.push({ name: stateName, cities: [] });
+            //     addCountry();
+            // }
         });
 
         countryItem.querySelector(".edit-country").addEventListener("click",()=>{
-            const newCountry = prompt("Edit country name:", data[cIndex].name);
-            if (newCountry) {
+            showInput(countryItem, country.name, (newCountry)=>{
                 data[cIndex].name = newCountry;
                 addCountry();
-            }
+            })
+            // const newCountry = prompt("Edit country name:", data[cIndex].name);
+            // if (newCountry) {
+            //     data[cIndex].name = newCountry;
+            //     addCountry();
+            // }
         });
 
         countryItem.querySelector(".delete-country").addEventListener("click", () => {
@@ -118,12 +138,46 @@ function addCountry() {
     
 };
 
+
+function showInput(element, currentVal, callback){
+    const inputDiv = document.createElement("div");
+    inputDiv.className = "mt-2 d-flex";
+
+    inputDiv.innerHTML = `
+        <input type="text" class="form-control" value="${currentVal}" placeholder="Enter name">
+        <button class="btn btn-info ms-2 save-btn">Save</button>
+        <button class="btn btn-secondary ms-2 cancel-btn">Cancel</button>
+    `;
+
+    element.appendChild(inputDiv);
+
+
+    const input = inputDiv.querySelector("input");
+    input.focus();
+
+    inputDiv.querySelector(".save-btn").addEventListener("click", ()=>{
+        if(input.value){
+            callback(input.value);
+        }
+    });
+
+    inputDiv.querySelector(".cancel-btn").addEventListener("click",()=>{
+        inputDiv.remove();
+    });
+
+}
+
+
 addCountryBtn.addEventListener("click", () => {
-    const countryName = prompt("Enter country name:");
-    if (countryName) {
+    showInput(countryList, "",(countryName)=>{
         data.push({ name: countryName, states: [] });
         addCountry();
-    }
+    });
+    // const countryName = prompt("Enter country name:");
+    // if (countryName) {
+        // data.push({ name: countryName, states: [] });
+    //     addCountry();
+    // }
 });
 
 addCountry()
@@ -161,6 +215,4 @@ addCountry()
 //         }
 //     }
 // ]
-
-
 

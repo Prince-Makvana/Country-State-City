@@ -3,13 +3,17 @@ const addCountryBtn = document.getElementById("addCountry");
 
 let data =  JSON.parse(localStorage.getItem("CountryData")) ||  []
 
+
+
+// Main Function
+
 function addCountry() {
 
     countryList.innerHTML = "";
 
     data.forEach((country, cIndex) => {
         const countryItem = document.createElement("li");
-        countryItem.className = "list-group-item";
+        countryItem.className = "list-group-item bg-secondary-subtle border border-2 border-dark";
 
         countryItem.innerHTML = `
           <strong>${country.name}</strong>
@@ -23,7 +27,7 @@ function addCountry() {
 
         country.states.forEach((state, sIndex) => {
             const stateItem = document.createElement("li");
-            stateItem.className = "list-group-item";
+            stateItem.className = "list-group-item bg-info-subtle border border-1 border-secondary";
 
             stateItem.innerHTML = `
                 <span>${state.name}</span>
@@ -37,7 +41,7 @@ function addCountry() {
 
             state.cities.forEach((city, ciIndex) => {
                 const cityItem = document.createElement("li");
-                cityItem.className = "list-group-item";
+                cityItem.className = "list-group-item bg-warning-subtle border border-1 border-secondary";
 
                 cityItem.innerHTML = `
                     <span>${city}</span>
@@ -47,10 +51,11 @@ function addCountry() {
                 `;
 
                 cityItem.querySelector(".edit-city").addEventListener("click", () => {
-                    showInput(cityItem, city.name, (newCity)=>{
-                        data[cIndex].states[sIndex].cities[ciIndex] = newCity;
-                        addCountry();
-                    })
+                    showCityEdit(cityItem, city, cIndex, sIndex, ciIndex);
+                    // showInput(cityItem, city, (newCity)=>{
+                    //     data[cIndex].states[sIndex].cities[ciIndex] = newCity;
+                    //     addCountry();
+                    // })
                     // const newCity = prompt("Edit city name:", data[cIndex].states[sIndex].cities[ciIndex]);
                     // if (newCity) {
                     //     data[cIndex].states[sIndex].cities[ciIndex] = newCity;
@@ -79,10 +84,11 @@ function addCountry() {
             });
 
             stateItem.querySelector(".edit-state").addEventListener("click", () => {
-                showInput(stateItem, state.name, (newState) =>{
-                    data[cIndex].states[sIndex].name = newState;
-                    addCountry();
-                })
+                showStateEdit(stateItem, state.name, cIndex, sIndex);
+                // showInput(stateItem, state.name, (newState) =>{
+                //     data[cIndex].states[sIndex].name = newState;
+                //     addCountry();
+                // })
                 // const newState = prompt("Edit state name:", data[cIndex].states[sIndex].name);
                 // if (newState) {
                 //     data[cIndex].states[sIndex].name = newState;
@@ -139,6 +145,9 @@ function addCountry() {
 };
 
 
+
+// Country, State, City Add & Country Edit Function
+
 function showInput(element, currentVal, callback){
     const inputDiv = document.createElement("div");
     inputDiv.className = "mt-2 d-flex";
@@ -168,6 +177,96 @@ function showInput(element, currentVal, callback){
 }
 
 
+
+// State Edit Function
+
+function showStateEdit(element, currentVal, cIndex, sIndex) {
+    const stateDiv = document.createElement("div");
+    stateDiv.className = "mt-2";
+
+    let cOptions = data.map((c, i) =>{
+        return  `<option ${cIndex === i && "selected"} value="${i}">${c.name}</option>`
+    });
+
+    stateDiv.innerHTML = `
+        <div class="d-flex">
+            <input type="text" class="form-control" value="${currentVal}" placeholder="Enter state name">
+            <select class="ms-2 pe-5 border border-2 border-dark rounded-3 bg-secondary">${cOptions}</select>
+            <button class="btn btn-info ms-2 save-btn">Save</button>
+            <button class="btn btn-secondary ms-2 cancel-btn">Cancel</button>
+        </div>
+    `;
+
+    element.appendChild(stateDiv);
+ 
+    const input = stateDiv.querySelector("input");
+    input.focus();
+    const select = stateDiv.querySelector("select");    
+
+    stateDiv.querySelector(".save-btn").addEventListener("click", () => {
+        const newState = input.value;
+        if (!newState) return;
+
+        const newcIndex = parseInt(select.value);
+        const stateData = data[cIndex].states[sIndex];
+
+        data[cIndex].states.splice(sIndex, 1);
+
+        data[newcIndex].states.push({ ...stateData, name: newState });
+
+        addCountry();
+    });
+
+    stateDiv.querySelector(".cancel-btn").addEventListener("click", () => stateDiv.remove());
+}
+
+
+
+// City Edit Function
+
+function showCityEdit(element, currentVal, cIndex, sIndex, ciIndex){
+    const cityDiv = document.createElement("div");
+    cityDiv.className = "mt-2";
+
+    let cOptions = data.map((c, i) =>{
+        return  `<option ${cIndex === i && "selected"} value="${i}">${c.name}</option>`
+    });
+
+    cityDiv.innerHTML = `
+        <div class="d-flex">
+            <input type="text" class="form-control" value="${currentVal}" placeholder="Enter state name">
+            <select id="selectCountry" class="ms-2 pe-5 border border-2 border-dark rounded-3 bg-secondary">${cOptions}</select>
+            <select id="selectState" class="ms-2 pe-5 border border-2 border-dark rounded-3 bg-secondary"></select>
+            <button class="btn btn-info ms-2 save-btn">Save</button>
+            <button class="btn btn-secondary ms-2 cancel-btn">Cancel</button>
+        </div>
+    `;
+
+    element.appendChild(cityDiv);
+    
+    const input = cityDiv.querySelector("input");
+    input.focus();
+    const selectCountry = cityDiv.querySelector("#selectCountry"); 
+    const selectState = cityDiv.querySelector("#selectState"); 
+
+    cityDiv.querySelector(".save-btn").addEventListener("click", () => {
+        const newCity = input.value;
+        if (!newCity) return;
+
+
+
+        data[cIndex].states[sIndex].cities.splice(ciIndex, 1);
+        data[cIndex].states[sIndex].cities.push(newCity);
+
+        addCountry();
+    });
+
+    cityDiv.querySelector(".cancel-btn").addEventListener("click", () => cityDiv.remove());
+
+}
+
+
+
 addCountryBtn.addEventListener("click", () => {
     showInput(countryList, "",(countryName)=>{
         data.push({ name: countryName, states: [] });
@@ -187,7 +286,7 @@ addCountry()
 
 
 
-
+//<>
 // const data = [
 //     {
 //         "country1": {
@@ -216,3 +315,4 @@ addCountry()
 //     }
 // ]
 
+// </>

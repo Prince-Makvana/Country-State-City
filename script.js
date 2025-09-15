@@ -231,6 +231,8 @@ function showCityEdit(element, currentVal, cIndex, sIndex, ciIndex){
     let cOptions = data.map((c, i) =>{
         return  `<option ${cIndex === i && "selected"} value="${i}">${c.name}</option>`
     });
+    
+    
 
     cityDiv.innerHTML = `
         <div class="d-flex">
@@ -249,14 +251,31 @@ function showCityEdit(element, currentVal, cIndex, sIndex, ciIndex){
     const selectCountry = cityDiv.querySelector("#selectCountry"); 
     const selectState = cityDiv.querySelector("#selectState"); 
 
+
+    function updatesOption(){
+    let selectedcIndex = parseInt(selectCountry.value);
+    // console.log(selectedcIndex);
+    let sOptions = data[selectedcIndex].states.map((s, i)=>{
+            return `<option ${sIndex === i && "selected"} value="${i}">${s.name}</option>`
+    });
+    // console.log(sOptions);
+    selectState.innerHTML = sOptions
+    }
+
+    updatesOption();
+    selectCountry.addEventListener("change",updatesOption);
+
+
     cityDiv.querySelector(".save-btn").addEventListener("click", () => {
         const newCity = input.value;
         if (!newCity) return;
 
+        let newcIndex = parseInt(selectCountry.value);
+        let newsIndex = parseInt(selectState.value)
 
 
         data[cIndex].states[sIndex].cities.splice(ciIndex, 1);
-        data[cIndex].states[sIndex].cities.push(newCity);
+        data[newcIndex].states[newsIndex].cities.push(newCity);
 
         addCountry();
     });

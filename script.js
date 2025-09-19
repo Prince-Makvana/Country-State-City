@@ -44,14 +44,52 @@ function addCountry() {
                 cityItem.className = "list-group-item bg-warning-subtle border border-1 border-secondary";
 
                 cityItem.innerHTML = `
-                    <span>${city}</span>
+                    <span>${city.name}</span>
                     <button class="btn btn-sm btn-outline-danger float-end ms-2 delete-city">Delete</button>
-                    <button class="btn btn-sm btn-outline-primary float-end  edit-city">Edit</button>
-                    
+                    <button class="btn btn-sm btn-outline-primary float-end ms-2  edit-city">Edit</button> 
+                    <button class="btn btn-sm btn-success float-end add-area">area</button>
+                    <ul class="nested-list mt-2"></ul>
                 `;
 
+                //////////////////////////////////////////////////////////////////
+
+                const areaList = cityItem.querySelector("ul");
+
+                city.areas.forEach((area, aIndex) => {
+                    const areaItem = document.createElement("li");
+                    areaItem.className = "list-group-item bg-primary-subtle border border-1 border-secondary";
+
+                    areaItem.innerHTML = `
+                    <span>${area}</span>
+                    <button class="btn btn-sm btn-outline-danger float-end ms-2 delete-area">Delete</button>
+                    <button class="btn btn-sm btn-outline-primary float-end  edit-area">Edit</button>
+                `;
+
+                    areaItem.querySelector(".edit-area").addEventListener("click", () => {
+                        showAreaEdit(areaItem, area, aIndex, cIndex, sIndex, ciIndex);
+                    });
+
+                    areaItem.querySelector(".delete-area").addEventListener("click", () => {
+                        data[cIndex].states[sIndex].cities[ciIndex].areas.splice(aIndex, 1);
+                        addCountry();
+                    });
+
+                    areaList.appendChild(areaItem);
+                });
+
+                cityItem.querySelector(".add-area").addEventListener("click", () => {
+                    showInput(cityItem, "", (areaName) => {
+                        data[cIndex].states[sIndex].cities[ciIndex].areas.push(areaName);
+                        addCountry();
+                    })
+                });
+
+                ///////////////////////////////////////////////////////////////
+
+
+
                 cityItem.querySelector(".edit-city").addEventListener("click", () => {
-                    showCityEdit(cityItem, city, cIndex, sIndex, ciIndex);
+                    showCityEdit(cityItem, city.name, cIndex, sIndex, ciIndex);
                     // showInput(cityItem, city, (newCity)=>{
                     //     data[cIndex].states[sIndex].cities[ciIndex] = newCity;
                     //     addCountry();
@@ -73,7 +111,7 @@ function addCountry() {
 
             stateItem.querySelector(".add-city").addEventListener("click", () => {
                 showInput(stateItem, "", (cityName)=>{
-                    data[cIndex].states[sIndex].cities.push(cityName);
+                    data[cIndex].states[sIndex].cities.push({name: cityName, areas: [] });
                     addCountry();
                 })
                 // const cityName = prompt("Enter city name:");
@@ -146,7 +184,27 @@ function addCountry() {
 
 
 
-// Country, State, City Add & Country Edit Function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Country, State, City, Area Add & Country Edit Function
 
 function showInput(element, currentVal, callback){
     const inputDiv = document.createElement("div");

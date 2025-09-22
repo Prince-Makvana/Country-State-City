@@ -51,8 +51,6 @@ function addCountry() {
                     <ul class="nested-list mt-2"></ul>
                 `;
 
-                //////////////////////////////////////////////////////////////////
-
                 const areaList = cityItem.querySelector("ul");
 
                 city.areas.forEach((area, aIndex) => {
@@ -83,9 +81,6 @@ function addCountry() {
                         addCountry();
                     })
                 });
-
-                ///////////////////////////////////////////////////////////////
-
 
 
                 cityItem.querySelector(".edit-city").addEventListener("click", () => {
@@ -184,26 +179,6 @@ function addCountry() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Country, State, City, Area Add & Country Edit Function
 
 function showInput(element, currentVal, callback){
@@ -279,7 +254,6 @@ function showStateEdit(element, currentVal, cIndex, sIndex) {
 }
 
 
-
 // City Edit Function
 
 function showCityEdit(element, currentVal, cIndex, sIndex, ciIndex){
@@ -339,6 +313,91 @@ function showCityEdit(element, currentVal, cIndex, sIndex, ciIndex){
     });
 
     cityDiv.querySelector(".cancel-btn").addEventListener("click", () => cityDiv.remove());
+
+}
+
+
+// Area Edit Function
+
+function showAreaEdit(element, currentVal, aIndex, cIndex, sIndex, ciIndex){
+    const areaDiv = document.createElement("div");
+    areaDiv.className = "mt-2";
+
+    let cOptions = data.map((c, i) =>{
+        return  `<option ${cIndex === i && "selected"} value="${i}">${c.name}</option>`
+    });
+    
+    
+
+    areaDiv.innerHTML = `
+        <div class="d-flex">
+            <input type="text" class="form-control" value="${currentVal}" placeholder="Enter state name">
+            <select id="selectCountry" class="ms-2 pe-5 border border-2 border-dark rounded-3 bg-secondary">${cOptions}</select>
+            <select id="selectState" class="ms-2 pe-5 border border-2 border-dark rounded-3 bg-secondary"></select>
+            <select id="selectCity" class="ms-2 pe-5 border border-2 border-dark rounded-3 bg-secondary"></select>
+            <button class="btn btn-info ms-2 save-btn">Save</button>
+            <button class="btn btn-secondary ms-2 cancel-btn">Cancel</button>
+        </div>
+    `;
+
+    element.appendChild(areaDiv);
+    
+    const input = areaDiv.querySelector("input");
+    input.focus();
+    const selectCountry = areaDiv.querySelector("#selectCountry"); 
+    const selectState = areaDiv.querySelector("#selectState");
+    const selectCity = areaDiv.querySelector("#selectCity");
+
+
+    function updatesOption() {
+        let selectedcIndex = parseInt(selectCountry.value);
+        // console.log(selectedcIndex);
+        let sOptions = data[selectedcIndex].states.map((s, i) => {
+            return `<option ${sIndex === i && "selected"} value="${i}">${s.name}</option>`
+        });
+        // console.log(sOptions);
+        selectState.innerHTML = sOptions
+
+        function updateciOption() {
+            let selectedcIndex = parseInt(selectCountry.value);
+            let selectedsIndex = parseInt(selectState.value);
+            // console.log(selectedcIndex);
+            // console.log(selectedsIndex);
+            let ciOptions = data[selectedcIndex].states[selectedsIndex].cities.map((ci, i) => {
+                return `<option ${ciIndex === i && "selected"} value="${i}">${ci.name}</option>`
+            });
+            // console.log(ciOptions);
+            selectCity.innerHTML = ciOptions
+        }
+
+        updateciOption();
+        selectState.addEventListener("change", updateciOption);
+    }
+
+    updatesOption();
+    selectCountry.addEventListener("change", updatesOption);
+
+
+    
+
+
+
+    areaDiv.querySelector(".save-btn").addEventListener("click", () => {
+        const newArea = input.value;
+        if (!newArea) return;
+
+        let newcIndex = parseInt(selectCountry.value);
+        let newsIndex = parseInt(selectState.value);
+        let newciIndex = parseInt(selectCity.value);
+
+
+        data[cIndex].states[sIndex].cities[ciIndex].areas.splice(aIndex, 1);
+        data[newcIndex].states[newsIndex].cities[newciIndex].areas.push(newArea);
+
+        addCountry();
+    });
+
+    areaDiv.querySelector(".cancel-btn").addEventListener("click", () => areaDiv.remove());
 
 }
 

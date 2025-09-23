@@ -56,6 +56,8 @@ PDFdownload.addEventListener("click", () => {
         }
     });
 
+    if (rows.length === 0) return;
+
     doc.autoTable({
         head: [['Country Name', 'State Name', 'City Name', 'Area Name']], 
         body: rows.map(r => [r.Country, r.State, r.City, r.Area]),                   
@@ -65,17 +67,76 @@ PDFdownload.addEventListener("click", () => {
     doc.save("countries.pdf");
 });
 
+
 // XLSX Download
 
 XLSXdownload.addEventListener("click", () => {
     alert("On going work for XLSX download.")
 });
 
+
 // CSV Download
 
 CSVdownload.addEventListener("click", () => {
-    alert("On going work for CSV download.")
+    let tableData = JSON.parse(localStorage.getItem("CountryData")) || [];
+
+    let rows = [];
+    tableData.map(country => {
+        country.states.map(state => {
+            state.cities.map(city => {
+                city.areas.map(area => {
+                    rows.push({
+                        Country: country.name, 
+                        State: state.name, 
+                        City: city.name, 
+                        Area: area
+                    })
+                })
+                if(city.areas.length === 0){
+                    rows.push({
+                        Country: country.name, 
+                        State: state.name, 
+                        City: city.name, 
+                        Area: "-"
+                    })
+                }
+            })
+            if(state.cities.length === 0){
+                rows.push({
+                    Country: country.name, 
+                    State: state.name, 
+                    City: "-", 
+                    Area: "-"
+                })
+            }
+        })
+        if(country.states.length === 0){
+            rows.push({
+                Country: country.name, 
+                State: "-", 
+                City: "-", 
+                Area: "-"
+            })
+        }
+    });
+
+    if (rows.length === 0) return;    
+    
+    const header = Object.keys(rows[0]).join(",");
+    const csv = rows.map(r => Object.values(r).map(v => `"${v}"`).join(",")).join("\n");
+
+    const blob = new Blob([header + "\n" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "countries.csv";
+    a.click();
+
 });
+
+
+
 
 // Main Function
 

@@ -1,8 +1,69 @@
 const countryList = document.getElementById("countryList");
 const addCountryBtn = document.getElementById("addCountry");
+const selectDelete = document.getElementById("selectDelete");
+const PDFdownload = document.getElementById("downloadPDF");
+const XLSXdownload = document.getElementById("downloadXLSX");
+const CSVdownload = document.getElementById("downloadCSV");
 
-let data =  JSON.parse(localStorage.getItem("CountryData")) ||  []
+let data = JSON.parse(localStorage.getItem("CountryData")) || []
+let countryCheckbox = []
 
+// PDF Download
+
+PDFdownload.addEventListener("click", () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    let tableData = JSON.parse(localStorage.getItem("CountryData")) || [];
+
+    let rows = [];
+    tableData.map(country => {
+        country.states.map(state => {
+            state.cities.map(city => {
+                city.areas.map(area => {
+                    rows.push({
+                        Country: country.name, 
+                        State: state.name, 
+                        City: city.name, 
+                        Area: area
+                    })
+                })
+                if(city.areas.length === 0){
+                    rows.push({
+                        Country: country.name, 
+                        State: state.name, 
+                        City: city.name, 
+                        Area: "-"
+                    })
+                }
+            })
+            if(state.cities.length === 0){
+                rows.push({
+                    Country: country.name, 
+                    State: state.name, 
+                    City: "-", 
+                    Area: "-"
+                })
+            }
+        })
+        if(country.states.length === 0){
+            rows.push({
+                Country: country.name, 
+                State: "-", 
+                City: "-", 
+                Area: "-"
+            })
+        }
+    });
+
+    doc.autoTable({
+        head: [['Country Name', 'State Name', 'City Name', 'Area Name']], 
+        body: rows.map(r => [r.Country, r.State, r.City, r.Area]),                   
+        startY: 20         
+    });
+
+    doc.save("countries.pdf");
+});
 
 
 // Main Function
@@ -16,6 +77,7 @@ function addCountry() {
         countryItem.className = "list-group-item bg-secondary-subtle border border-2 border-dark";
 
         countryItem.innerHTML = `
+            <input class="form-check-input" type="checkbox" value="" id="checkcDefault">
           <strong>${country.name}</strong>
           <button class="btn btn-sm btn-outline-danger float-end ms-2 delete-country">Delete</button>
           <button class="btn btn-sm btn-outline-primary float-end ms-2 edit-country">Edit</button>
@@ -105,8 +167,8 @@ function addCountry() {
             });
 
             stateItem.querySelector(".add-city").addEventListener("click", () => {
-                showInput(stateItem, "", (cityName)=>{
-                    data[cIndex].states[sIndex].cities.push({name: cityName, areas: [] });
+                showInput(stateItem, "", (cityName) => {
+                    data[cIndex].states[sIndex].cities.push({ name: cityName, areas: [] });
                     addCountry();
                 })
                 // const cityName = prompt("Enter city name:");
@@ -136,9 +198,9 @@ function addCountry() {
 
             stateList.appendChild(stateItem);
         });
-        
+
         countryItem.querySelector(".add-state").addEventListener("click", () => {
-            showInput(countryItem, "", (stateName)=>{
+            showInput(countryItem, "", (stateName) => {
                 data[cIndex].states.push({ name: stateName, cities: [] });
                 addCountry();
             })
@@ -149,8 +211,8 @@ function addCountry() {
             // }
         });
 
-        countryItem.querySelector(".edit-country").addEventListener("click",()=>{
-            showInput(countryItem, country.name, (newCountry)=>{
+        countryItem.querySelector(".edit-country").addEventListener("click", () => {
+            showInput(countryItem, country.name, (newCountry) => {
                 data[cIndex].name = newCountry;
                 addCountry();
             })
@@ -165,23 +227,56 @@ function addCountry() {
             data.splice(cIndex, 1);
             addCountry();
         });
-   
+
         countryList.appendChild(countryItem);
+
+        countryItem.querySelector("#checkcDefault").addEventListener("click", () => {
+            selectcChecbox(cIndex);
+        });
+
     });
 
-    console.log({data})
+    console.log({ data })
     /**
      * In local storage on string can be store so we are parsing as a string
      */
     localStorage.setItem("CountryData", JSON.stringify(data))
-    
+
 };
+
+
+// handal ccountry delete
+
+
+function selectcChecbox(cIndex) {
+    if (countryCheckbox.includes(cIndex)) {
+        countryCheckbox.splice(countryCheckbox.indexOf(cIndex), 1);
+        console.log(countryCheckbox);
+    } else {
+        countryCheckbox.push(cIndex)
+        console.log(countryCheckbox);
+    }
+}
+
+selectDelete.addEventListener("click", () => {
+    if (countryCheckbox.length === 0) {
+        alert("countryCheckbox is not selected.")
+    } else {
+        const sortedcIndexes = countryCheckbox.sort((a, b) => b - a);
+        sortedcIndexes.forEach(i => {
+            data.splice(i, 1);
+        });
+        countryCheckbox = [];
+        addCountry();
+    }
+});
+
 
 
 
 // Country, State, City, Area Add & Country Edit Function
 
-function showInput(element, currentVal, callback){
+function showInput(element, currentVal, callback) {
     const inputDiv = document.createElement("div");
     inputDiv.className = "mt-2 d-flex";
 
@@ -197,13 +292,13 @@ function showInput(element, currentVal, callback){
     const input = inputDiv.querySelector("input");
     input.focus();
 
-    inputDiv.querySelector(".save-btn").addEventListener("click", ()=>{
-        if(input.value){
+    inputDiv.querySelector(".save-btn").addEventListener("click", () => {
+        if (input.value) {
             callback(input.value);
         }
     });
 
-    inputDiv.querySelector(".cancel-btn").addEventListener("click",()=>{
+    inputDiv.querySelector(".cancel-btn").addEventListener("click", () => {
         inputDiv.remove();
     });
 
@@ -217,8 +312,8 @@ function showStateEdit(element, currentVal, cIndex, sIndex) {
     const stateDiv = document.createElement("div");
     stateDiv.className = "mt-2";
 
-    let cOptions = data.map((c, i) =>{
-        return  `<option ${cIndex === i && "selected"} value="${i}">${c.name}</option>`
+    let cOptions = data.map((c, i) => {
+        return `<option ${cIndex === i && "selected"} value="${i}">${c.name}</option>`
     });
 
     stateDiv.innerHTML = `
@@ -231,10 +326,10 @@ function showStateEdit(element, currentVal, cIndex, sIndex) {
     `;
 
     element.appendChild(stateDiv);
- 
+
     const input = stateDiv.querySelector("input");
     input.focus();
-    const select = stateDiv.querySelector("select");    
+    const select = stateDiv.querySelector("select");
 
     stateDiv.querySelector(".save-btn").addEventListener("click", () => {
         const newState = input.value;
@@ -256,15 +351,15 @@ function showStateEdit(element, currentVal, cIndex, sIndex) {
 
 // City Edit Function
 
-function showCityEdit(element, currentVal, cIndex, sIndex, ciIndex){
+function showCityEdit(element, currentVal, cIndex, sIndex, ciIndex) {
     const cityDiv = document.createElement("div");
     cityDiv.className = "mt-2";
 
-    let cOptions = data.map((c, i) =>{
-        return  `<option ${cIndex === i && "selected"} value="${i}">${c.name}</option>`
+    let cOptions = data.map((c, i) => {
+        return `<option ${cIndex === i && "selected"} value="${i}">${c.name}</option>`
     });
-    
-    
+
+
 
     cityDiv.innerHTML = `
         <div class="d-flex">
@@ -277,25 +372,25 @@ function showCityEdit(element, currentVal, cIndex, sIndex, ciIndex){
     `;
 
     element.appendChild(cityDiv);
-    
+
     const input = cityDiv.querySelector("input");
     input.focus();
-    const selectCountry = cityDiv.querySelector("#selectCountry"); 
-    const selectState = cityDiv.querySelector("#selectState"); 
+    const selectCountry = cityDiv.querySelector("#selectCountry");
+    const selectState = cityDiv.querySelector("#selectState");
 
 
-    function updatesOption(){
-    let selectedcIndex = parseInt(selectCountry.value);
-    // console.log(selectedcIndex);
-    let sOptions = data[selectedcIndex].states.map((s, i)=>{
+    function updatesOption() {
+        let selectedcIndex = parseInt(selectCountry.value);
+        // console.log(selectedcIndex);
+        let sOptions = data[selectedcIndex].states.map((s, i) => {
             return `<option ${sIndex === i && "selected"} value="${i}">${s.name}</option>`
-    });
-    // console.log(sOptions);
-    selectState.innerHTML = sOptions
+        });
+        // console.log(sOptions);
+        selectState.innerHTML = sOptions
     }
 
     updatesOption();
-    selectCountry.addEventListener("change",updatesOption);
+    selectCountry.addEventListener("change", updatesOption);
 
 
     cityDiv.querySelector(".save-btn").addEventListener("click", () => {
@@ -319,15 +414,15 @@ function showCityEdit(element, currentVal, cIndex, sIndex, ciIndex){
 
 // Area Edit Function
 
-function showAreaEdit(element, currentVal, aIndex, cIndex, sIndex, ciIndex){
+function showAreaEdit(element, currentVal, aIndex, cIndex, sIndex, ciIndex) {
     const areaDiv = document.createElement("div");
     areaDiv.className = "mt-2";
 
-    let cOptions = data.map((c, i) =>{
-        return  `<option ${cIndex === i && "selected"} value="${i}">${c.name}</option>`
+    let cOptions = data.map((c, i) => {
+        return `<option ${cIndex === i && "selected"} value="${i}">${c.name}</option>`
     });
-    
-    
+
+
 
     areaDiv.innerHTML = `
         <div class="d-flex">
@@ -341,10 +436,10 @@ function showAreaEdit(element, currentVal, aIndex, cIndex, sIndex, ciIndex){
     `;
 
     element.appendChild(areaDiv);
-    
+
     const input = areaDiv.querySelector("input");
     input.focus();
-    const selectCountry = areaDiv.querySelector("#selectCountry"); 
+    const selectCountry = areaDiv.querySelector("#selectCountry");
     const selectState = areaDiv.querySelector("#selectState");
     const selectCity = areaDiv.querySelector("#selectCity");
 
@@ -378,7 +473,7 @@ function showAreaEdit(element, currentVal, aIndex, cIndex, sIndex, ciIndex){
     selectCountry.addEventListener("change", updatesOption);
 
 
-    
+
 
 
 
@@ -404,13 +499,13 @@ function showAreaEdit(element, currentVal, aIndex, cIndex, sIndex, ciIndex){
 
 
 addCountryBtn.addEventListener("click", () => {
-    showInput(countryList, "",(countryName)=>{
+    showInput(countryList, "", (countryName) => {
         data.push({ name: countryName, states: [] });
         addCountry();
     });
     // const countryName = prompt("Enter country name:");
     // if (countryName) {
-        // data.push({ name: countryName, states: [] });
+    // data.push({ name: countryName, states: [] });
     //     addCountry();
     // }
 });

@@ -65,6 +65,17 @@ PDFdownload.addEventListener("click", () => {
     doc.save("countries.pdf");
 });
 
+// XLSX Download
+
+XLSXdownload.addEventListener("click", () => {
+    alert("On going work for XLSX download.")
+});
+
+// CSV Download
+
+CSVdownload.addEventListener("click", () => {
+    alert("On going work for CSV download.")
+});
 
 // Main Function
 
@@ -399,10 +410,12 @@ function showCityEdit(element, currentVal, cIndex, sIndex, ciIndex) {
 
         let newcIndex = parseInt(selectCountry.value);
         let newsIndex = parseInt(selectState.value)
+        const cityData = data[cIndex].states[sIndex].cities[ciIndex];
+
 
 
         data[cIndex].states[sIndex].cities.splice(ciIndex, 1);
-        data[newcIndex].states[newsIndex].cities.push(newCity);
+        data[newcIndex].states[newsIndex].cities.push({ ...cityData, name: newCity });
 
         addCountry();
     });
@@ -471,10 +484,6 @@ function showAreaEdit(element, currentVal, aIndex, cIndex, sIndex, ciIndex) {
 
     updatesOption();
     selectCountry.addEventListener("change", updatesOption);
-
-
-
-
 
 
     areaDiv.querySelector(".save-btn").addEventListener("click", () => {

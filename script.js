@@ -185,10 +185,26 @@ CSVdownload.addEventListener("click", () => {
 });
 
 
+// sorted all data
+
+function sortData() {
+  data.sort((a, b) => a.name.localeCompare(b.name));
+  data.forEach(country => {
+    country.states.sort((a, b) => a.name.localeCompare(b.name));
+    country.states.forEach(state => {
+      state.cities.sort((a, b) => a.name.localeCompare(b.name));
+      state.cities.forEach(city => {
+        city.areas.sort((a, b) => a.localeCompare(b));
+      });
+    });
+  });
+}
 
 // Main Function
 
 function addCountry() {
+    sortData();
+
 
     countryList.innerHTML = "";
 

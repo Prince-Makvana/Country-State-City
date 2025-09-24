@@ -4,6 +4,8 @@ const countryDelete = document.getElementById("countryDelete");
 const PDFdownload = document.getElementById("downloadPDF");
 const XLSXdownload = document.getElementById("downloadXLSX");
 const CSVdownload = document.getElementById("downloadCSV");
+const datanotfound = document.querySelector(".datanotfound");
+const notes =  document.querySelector(".notes");
 
 let data = JSON.parse(localStorage.getItem("CountryData")) || []
 
@@ -208,7 +210,14 @@ function addCountry() {
 
     countryList.innerHTML = "";
 
-    data.forEach((country, cIndex) => {
+    if(data.length === 0){
+        datanotfound.innerText = "File is Empty.";
+        notes.innerText = "Note: Click add country button to add data.";
+    }else{
+        datanotfound.innerText = "";
+        notes.innerText = "";
+
+        data.forEach((country, cIndex) => {
         const countryItem = document.createElement("li");
         countryItem.className = "list-group-item bg-secondary-subtle border border-2 border-dark";
 
@@ -424,6 +433,7 @@ function addCountry() {
             addCountry();
         }
     });
+    }
 
 
     console.log({ data })

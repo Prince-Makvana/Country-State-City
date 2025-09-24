@@ -70,7 +70,57 @@ PDFdownload.addEventListener("click", () => {
 // XLSX Download
 
 XLSXdownload.addEventListener("click", () => {
-    alert("On going work for XLSX download.")
+    let tableData = JSON.parse(localStorage.getItem("CountryData")) || [];
+
+    let rows = [];
+    tableData.map(country => {
+        country.states.map(state => {
+            state.cities.map(city => {
+                city.areas.map(area => {
+                    rows.push({
+                        Country: country.name, 
+                        State: state.name, 
+                        City: city.name, 
+                        Area: area
+                    })
+                })
+                if(city.areas.length === 0){
+                    rows.push({
+                        Country: country.name, 
+                        State: state.name, 
+                        City: city.name, 
+                        Area: "-"
+                    })
+                }
+            })
+            if(state.cities.length === 0){
+                rows.push({
+                    Country: country.name, 
+                    State: state.name, 
+                    City: "-", 
+                    Area: "-"
+                })
+            }
+        })
+        if(country.states.length === 0){
+            rows.push({
+                Country: country.name, 
+                State: "-", 
+                City: "-", 
+                Area: "-"
+            })
+        }
+    });
+
+    if (rows.length === 0) return;
+
+    console.log("rows", rows);
+
+    const xlsxsheet = XLSX.utils.json_to_sheet(rows);
+    const xlsxbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(xlsxbook,xlsxsheet,"country sheet");
+    XLSX.writeFile(xlsxbook,"country.xlsx",{Compression:true});
 });
 
 

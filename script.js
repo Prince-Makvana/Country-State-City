@@ -1,12 +1,11 @@
 const countryList = document.getElementById("countryList");
 const addCountryBtn = document.getElementById("addCountry");
-const selectDelete = document.getElementById("selectDelete");
+const countryDelete = document.getElementById("countryDelete");
 const PDFdownload = document.getElementById("downloadPDF");
 const XLSXdownload = document.getElementById("downloadXLSX");
 const CSVdownload = document.getElementById("downloadCSV");
 
 let data = JSON.parse(localStorage.getItem("CountryData")) || []
-let countryCheckbox = []
 
 // PDF Download
 
@@ -137,7 +136,6 @@ CSVdownload.addEventListener("click", () => {
 
 
 
-
 // Main Function
 
 function addCountry() {
@@ -149,8 +147,9 @@ function addCountry() {
         countryItem.className = "list-group-item bg-secondary-subtle border border-2 border-dark";
 
         countryItem.innerHTML = `
-            <input class="form-check-input" type="checkbox" value="" id="checkcDefault">
+          <input type="checkbox" class="form-check-input me-2 country-check" data-cindex="${cIndex}">
           <strong>${country.name}</strong>
+          <button class="btn btn-sm btn-danger float-end ms-2 bulk-delete-state">Delete States</button>
           <button class="btn btn-sm btn-outline-danger float-end ms-2 delete-country">Delete</button>
           <button class="btn btn-sm btn-outline-primary float-end ms-2 edit-country">Edit</button>
           <button class="btn btn-sm btn-success float-end add-state">State</button>
@@ -164,7 +163,9 @@ function addCountry() {
             stateItem.className = "list-group-item bg-info-subtle border border-1 border-secondary";
 
             stateItem.innerHTML = `
+                <input type="checkbox" class="form-check-input me-2 state-check" data-cindex="${cIndex}" data-sindex="${sIndex}">
                 <span>${state.name}</span>
+                <button class="btn btn-sm btn-danger float-end ms-2 bulk-delete-city">Delete Cities</button>
                 <button class="btn btn-sm btn-outline-danger float-end ms-2 delete-state">Delete</button>
                 <button class="btn btn-sm btn-outline-primary float-end ms-2 edit-state">Edit</button>
                 <button class="btn btn-sm btn-success float-end add-city">City</button>
@@ -178,7 +179,9 @@ function addCountry() {
                 cityItem.className = "list-group-item bg-warning-subtle border border-1 border-secondary";
 
                 cityItem.innerHTML = `
+                    <input type="checkbox" class="form-check-input me-2 city-check" data-cindex="${cIndex}" data-sindex="${sIndex}" data-ciindex="${ciIndex}">
                     <span>${city.name}</span>
+                    <button class="btn btn-sm btn-danger float-end ms-2 bulk-delete-area">Delete Areas</button>
                     <button class="btn btn-sm btn-outline-danger float-end ms-2 delete-city">Delete</button>
                     <button class="btn btn-sm btn-outline-primary float-end ms-2  edit-city">Edit</button> 
                     <button class="btn btn-sm btn-success float-end add-area">area</button>
@@ -192,10 +195,11 @@ function addCountry() {
                     areaItem.className = "list-group-item bg-primary-subtle border border-1 border-secondary";
 
                     areaItem.innerHTML = `
-                    <span>${area}</span>
-                    <button class="btn btn-sm btn-outline-danger float-end ms-2 delete-area">Delete</button>
-                    <button class="btn btn-sm btn-outline-primary float-end  edit-area">Edit</button>
-                `;
+                        <input type="checkbox" class="form-check-input me-2 area-check" data-cindex="${cIndex}" data-sindex="${sIndex}" data-ciindex="${ciIndex}" data-aindex="${aIndex}">
+                        <span>${area}</span>
+                        <button class="btn btn-sm btn-outline-danger float-end ms-2 delete-area">Delete</button>
+                        <button class="btn btn-sm btn-outline-primary float-end  edit-area">Edit</button>
+                    `;
 
                     areaItem.querySelector(".edit-area").addEventListener("click", () => {
                         showAreaEdit(areaItem, area, aIndex, cIndex, sIndex, ciIndex);
@@ -216,6 +220,18 @@ function addCountry() {
                     })
                 });
 
+                cityItem.querySelector(".bulk-delete-area").addEventListener("click", () => {
+                    const checkedAreas = cityItem.querySelectorAll(".area-check:checked");
+                    if(checkedAreas.length === 0){
+                        alert("Not selected area checkbox");
+                    }else{
+                        let indexes = Array.from(checkedAreas).map(ch => parseInt(ch.dataset.aindex));
+                        indexes.sort((a, b) => b - a).forEach(idx => {
+                            data[cIndex].states[sIndex].cities[ciIndex].areas.splice(idx, 1);
+                        });
+                        addCountry();
+                    }
+                });
 
                 cityItem.querySelector(".edit-city").addEventListener("click", () => {
                     showCityEdit(cityItem, city.name, cIndex, sIndex, ciIndex);
@@ -248,6 +264,19 @@ function addCountry() {
                 //     data[cIndex].states[sIndex].cities.push(cityName);
                 //     addCountry();
                 // }
+            });
+
+            stateItem.querySelector(".bulk-delete-city").addEventListener("click", () => {
+                const checkedCities = stateItem.querySelectorAll(".city-check:checked");
+                if(checkedCities.length === 0){
+                    alert("Not selected city checkbox");
+                }else{
+                    let indexes = Array.from(checkedCities).map(ch => parseInt(ch.dataset.ciindex));
+                    indexes.sort((a, b) => b - a).forEach(idx => {
+                        data[cIndex].states[sIndex].cities.splice(idx, 1);
+                    });
+                    addCountry();
+                }
             });
 
             stateItem.querySelector(".edit-state").addEventListener("click", () => {
@@ -283,6 +312,19 @@ function addCountry() {
             // }
         });
 
+        countryItem.querySelector(".bulk-delete-state").addEventListener("click", () => {
+            const checkedStates = countryItem.querySelectorAll(".state-check:checked");
+            if(checkedStates.length === 0){
+                alert("Not selected state checkbox");
+            }else{
+                let indexes = Array.from(checkedStates).map(ch => parseInt(ch.dataset.sindex));
+                indexes.sort((a, b) => b - a).forEach(idx => {
+                    data[cIndex].states.splice(idx, 1);
+                });
+                addCountry();
+            }
+        });
+
         countryItem.querySelector(".edit-country").addEventListener("click", () => {
             showInput(countryItem, country.name, (newCountry) => {
                 data[cIndex].name = newCountry;
@@ -302,11 +344,21 @@ function addCountry() {
 
         countryList.appendChild(countryItem);
 
-        countryItem.querySelector("#checkcDefault").addEventListener("click", () => {
-            selectcChecbox(cIndex);
-        });
-
     });
+    
+    countryDelete.addEventListener("click", () => {
+        const checkedCountries = document.querySelectorAll(".country-check:checked");
+        if(checkedCountries.length === 0){
+            alert("Not selected country checkbox");
+        }else{
+            let indexes = Array.from(checkedCountries).map(ch => parseInt(ch.dataset.cindex));
+            indexes.sort((a, b) => b - a).forEach(idx => {
+                data.splice(idx, 1);
+            });
+            addCountry();
+        }
+    });
+
 
     console.log({ data })
     /**
@@ -315,34 +367,6 @@ function addCountry() {
     localStorage.setItem("CountryData", JSON.stringify(data))
 
 };
-
-
-// handal ccountry delete
-
-
-function selectcChecbox(cIndex) {
-    if (countryCheckbox.includes(cIndex)) {
-        countryCheckbox.splice(countryCheckbox.indexOf(cIndex), 1);
-        console.log(countryCheckbox);
-    } else {
-        countryCheckbox.push(cIndex)
-        console.log(countryCheckbox);
-    }
-}
-
-selectDelete.addEventListener("click", () => {
-    if (countryCheckbox.length === 0) {
-        alert("countryCheckbox is not selected.")
-    } else {
-        const sortedcIndexes = countryCheckbox.sort((a, b) => b - a);
-        sortedcIndexes.forEach(i => {
-            data.splice(i, 1);
-        });
-        countryCheckbox = [];
-        addCountry();
-    }
-});
-
 
 
 
